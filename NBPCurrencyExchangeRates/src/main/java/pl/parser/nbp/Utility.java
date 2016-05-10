@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -29,19 +26,12 @@ public class Utility {
 		int startYear = getYear(startDate);
 		String dirsContent = getNbpDirs(startYear, yearRange);
 		
-		String newFormatOneDayBeforeStartDay = Parser.parseDate(getPreviousDay(startDate, 1));
-		String newFormatTwoDaysBeforeStartDay = Parser.parseDate(getPreviousDay(startDate, 2));
-		String newFormatStartDate = Parser.parseDate(startDate);
-		
-		String newFormatOneDayBeforeEndDay = Parser.parseDate(getPreviousDay(endDate, 1));
-		String newFormatTwoDaysBeforeEndDay = Parser.parseDate(getPreviousDay(endDate, 2));
-		String newFormatEndDate = Parser.parseDate(endDate);
+		String newFormatStartDateFollowingDays[] = getFollowingDays(startDate, 10);
+		String newFormatStartDatePreviousDays[] = getPreviousDays(endDate, 10);
 		
 		List<String> listWithCodes = new ArrayList<>();
 		
-		String s1 = "(" + newFormatStartDate + "|" + newFormatOneDayBeforeStartDay + "|" + newFormatTwoDaysBeforeStartDay + ")";
-		String s2 = "(" + newFormatEndDate + "|" + newFormatOneDayBeforeEndDay + "|" + newFormatTwoDaysBeforeEndDay + ")";
-		String regex = "c.{3}z" + s1 + ".*c.{3}z" + s2;
+		String regex = generateRegex(newFormatStartDateFollowingDays, newFormatStartDatePreviousDays);
 	    
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher =  pattern.matcher(dirsContent);
@@ -78,6 +68,7 @@ public class Utility {
 		    		sb.append(s);
 		    	}
 		    }
+		    scanner.close();
 		    if(year == 2015 || year == 2016)
 		    	allDirs += sb.replace(0, 1, "").toString();
 		    else
@@ -101,6 +92,7 @@ public class Utility {
 		    	sb.append(s);
 		    	sb.append("\r\n");
 		    }
+		    scanner.close();
 		    
 		    PrintWriter writer;
 			writer = new PrintWriter(codes.get(i), "UTF-8");
@@ -118,30 +110,13 @@ public class Utility {
 		
 	}
 	
-	public String getFridayIfWeekend(String date) {
-		
-		String tab[] = new String[2];
-		if(date.startsWith("0"))
-			date = "1" + date;
-		int dateAsInteger= Integer.parseInt(date);
-		
-		for(int i = 0; i < tab.length; i++) {
-			dateAsInteger--;
-			tab[i] = "" + dateAsInteger;
-			if(tab[i].length() > 6)
-				tab[i] = tab[i].substring(1, tab[i].length());
-		}
-		
-		return tab[0]+"|"+tab[1];
-	}
-	
-	public static String getPreviousDay(String strDate, int move) throws ParseException {
+	public static String getPreviousOrFollowingDay(String strDate, int move) throws ParseException {
 		
 		DateTime currentDate = new DateTime(getYear(strDate),
 											getMonth(strDate),
 											getDay(strDate),
 											0, 0);
-		DateTime oneDayBefore = currentDate.minusDays(move);
+		DateTime oneDayBefore = currentDate.plusDays(move);
 		
 		String oneDayBeforeAsString = oneDayBefore.getYear() + "-";
 		
@@ -158,7 +133,52 @@ public class Utility {
 		return oneDayBeforeAsString;
 	}
 	
-	private static int getYearRange(String startDate, String endDate) {
+	private static String[] getFollowingDays(String date, int numberOfFollowingDays) throws ParseException {
+		
+		String followingDays[] = new String[numberOfFollowingDays+1];
+		followingDays[0] = date;
+		for(int i = 1; i < numberOfFollowingDays+1; i++) {
+			date = followingDays[i-1];
+			followingDays[i-1] = Parser.parseDate(followingDays[i-1]);
+			followingDays[i] = getPreviousOrFollowingDay(date, 1);
+		}
+		followingDays[numberOfFollowingDays] = Parser.parseDate(followingDays[numberOfFollowingDays]);
+		
+		return followingDays;
+	}
+	
+	private static String[] getPreviousDays(String date, int numberOfPreviousDays) throws ParseException {
+		
+		String prevoiusDays[] = new String[numberOfPreviousDays+1];
+		prevoiusDays[0] = date;
+		for(int i = 1; i < numberOfPreviousDays+1; i++) {
+			date = prevoiusDays[i-1];
+			prevoiusDays[i-1] = Parser.parseDate(prevoiusDays[i-1]);
+			prevoiusDays[i] = getPreviousOrFollowingDay(date, -1);
+		}
+		prevoiusDays[numberOfPreviousDays] = Parser.parseDate(prevoiusDays[numberOfPreviousDays]);
+		
+		return prevoiusDays;
+	}
+	
+	private static String generateRegex(String[] followingDays, String[] previousDays) {
+		
+		String next = "(";
+		String previous = "(";
+		for(int i = 0; i < followingDays.length; i++) {
+			next += followingDays[i] + "|";
+			previous += previousDays[i] + "|";
+		}
+		next = next.substring(0, next.length()-1);
+		next += ")";
+		previous = previous.substring(0, previous.length()-1);
+		previous += ")";
+		String regex = "c.{3}z" + next + ".*c.{3}z" + previous;
+		
+		return regex;
+	}
+	
+	private static int getYearRange(String startDate, String endDate) { 
 		int dateFromYear = getYear(startDate);
 		int dateToYear = getYear(endDate);
 		return dateToYear-dateFromYear;

@@ -51,7 +51,7 @@ public class Statistics {
 	private static double round(double value) {
 		
 		DecimalFormat df = new DecimalFormat("#.####");
-		return Double.parseDouble(df.format(value).replace(',', '.'));
+		return Double.parseDouble(df.format(value).replace(',', '.')); 
 	}
 
 }
