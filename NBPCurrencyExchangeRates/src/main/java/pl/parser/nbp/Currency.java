@@ -8,6 +8,16 @@ public class Currency {
 	private double currencyBuyRate;
 	private String publishDate;
 	
+	
+	public Currency(String currencyName, String currencySymbol, double currencySellRate, double currencyBuyRate,
+			String publishDate) {
+		super();
+		this.currencyName = currencyName;
+		this.currencySymbol = currencySymbol;
+		this.currencySellRate = currencySellRate;
+		this.currencyBuyRate = currencyBuyRate;
+		this.publishDate = publishDate;
+	}
 	public String getPublishDate() {
 		return publishDate;
 	}
