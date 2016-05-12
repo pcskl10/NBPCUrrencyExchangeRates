@@ -19,22 +19,13 @@ public class MainClass {
 		List<String> listWithAdresses = null;
 		List<Currency> currencies = null;
 		try {
-			listWithAdresses = Utility.getAdresses("2012-01-06", "2013-01-31");
+			listWithAdresses = Utility.getAdresses("2012-01-10", "2013-01-31");
 			Utility.downloadXmlFilesFromParticularDays(listWithAdresses);
 			currencies = Parser.parseDataFromXmlFiles(listWithAdresses, "EUR");
 		} 
-		catch (ParserConfigurationException e) {
+		catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 		} 
-		catch (SAXException e) {
-			e.printStackTrace();
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		} 
-		catch (ParseException e) {
-			e.printStackTrace();
-		}
 		
 		System.out.println(Statistics.averageBuyRate(currencies));
 		System.out.println(Statistics.standardDeviationSellRate(currencies));
