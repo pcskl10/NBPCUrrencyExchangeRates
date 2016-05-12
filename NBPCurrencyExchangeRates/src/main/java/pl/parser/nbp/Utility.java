@@ -20,6 +20,8 @@ public class Utility {
 	
 	final static int CODE_LENGTH = 11;
 	final static String TABLE_TYPE = "c";
+	final static int FOLLOWING_DAYS = 1;
+	final static int PREVIOUS_DAYS = -1;
 	
 	private Utility() {
     }
@@ -35,8 +37,8 @@ public class Utility {
 		int startYear = getYear(startDate);
 		String dirsContent = getNbpDirs(startYear, yearRange);
 		
-		String newFormatStartDateFollowingDays[] = getFollowingDays(startDate, 10);
-		String newFormatStartDatePreviousDays[] = getPreviousDays(endDate, 10);
+		String newFormatStartDateFollowingDays[] = getDaysInRange(startDate, 10, FOLLOWING_DAYS);
+		String newFormatStartDatePreviousDays[] = getDaysInRange(endDate, 10, PREVIOUS_DAYS);
 		
 		List<String> listWithCodes = new ArrayList<>();
 		
@@ -56,7 +58,7 @@ public class Utility {
 		return listWithCodes;
 	}
 	
-	public String getNbpDirs(int year, int yearRange) throws IOException {
+	private String getNbpDirs(int year, int yearRange) throws IOException {
 		
 		URL url;
 		Scanner scanner = null;
@@ -119,7 +121,7 @@ public class Utility {
 		
 	}
 	
-	public String getPreviousOrFollowingDay(String strDate, int move) throws ParseException {
+	private String moveDate(String strDate, int move) throws ParseException {
 		
 		DateTime currentDate = new DateTime(getYear(strDate),
 											getMonth(strDate),
@@ -142,36 +144,21 @@ public class Utility {
 		return oneDayBeforeAsString;
 	}
 	
-	private String[] getFollowingDays(String date, int numberOfFollowingDays) throws ParseException {
+	private String[] getDaysInRange(String date, int numberOfDays, int FollowingOrPrevoius) throws ParseException {
 		
 		Parser parser = Parser.getInstance();
-		String followingDays[] = new String[numberOfFollowingDays+1];
-		followingDays[0] = date;
-		for(int i = 1; i < numberOfFollowingDays+1; i++) {
-			date = followingDays[i-1];
-			followingDays[i-1] = parser.parseDate(followingDays[i-1]);
-			followingDays[i] = getPreviousOrFollowingDay(date, 1);
+		String dates[] = new String[numberOfDays+1];
+		dates[0] = date;
+		for(int i = 1; i < numberOfDays+1; i++) {
+			date = dates[i-1];
+			dates[i-1] = parser.parseDate(dates[i-1]);
+			dates[i] = moveDate(date, FollowingOrPrevoius);
 		}
-		followingDays[numberOfFollowingDays] = parser.parseDate(followingDays[numberOfFollowingDays]);
+		dates[numberOfDays] = parser.parseDate(dates[numberOfDays]);
 		
-		return followingDays;
+		return dates;
 	}
-	
-	private String[] getPreviousDays(String date, int numberOfPreviousDays) throws ParseException {
 		
-		Parser parser = Parser.getInstance();
-		String prevoiusDays[] = new String[numberOfPreviousDays+1];
-		prevoiusDays[0] = date;
-		for(int i = 1; i < numberOfPreviousDays+1; i++) {
-			date = prevoiusDays[i-1];
-			prevoiusDays[i-1] = parser.parseDate(prevoiusDays[i-1]);
-			prevoiusDays[i] = getPreviousOrFollowingDay(date, -1);
-		}
-		prevoiusDays[numberOfPreviousDays] = parser.parseDate(prevoiusDays[numberOfPreviousDays]);
-		
-		return prevoiusDays;
-	}
-	
 	private String generateRegex(String[] followingDays, String[] previousDays) {
 		
 		String next = "(";

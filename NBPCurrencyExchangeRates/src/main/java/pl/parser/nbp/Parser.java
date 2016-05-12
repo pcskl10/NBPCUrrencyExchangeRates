@@ -84,7 +84,7 @@ public class Parser {
 		return element;
 	}
 	
-	public Currency getCurrencyInfo(Element eElementPublishDate, Element eElementCurrency) {
+	private Currency getCurrencyInfo(Element eElementPublishDate, Element eElementCurrency) {
 		
 		String publishDate = getValueFromAttribute(eElementPublishDate, "data_publikacji");
     	String currencyName = getValueFromAttribute(eElementCurrency, "nazwa_waluty");
