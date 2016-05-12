@@ -18,6 +18,7 @@ public class Utility {
 
 	
 	final static int CODE_LENGTH = 11;
+	final static String TABLE_TYPE = "c";
 	
 	public static List<String> getAdresses(String startDate, String endDate) throws ParseException, IOException {
 		
@@ -64,7 +65,7 @@ public class Utility {
 			StringBuilder sb = new StringBuilder("");
 		    while(scanner.hasNextLine()) {
 		    	String s = scanner.nextLine();
-		    	if(s.startsWith("c")) {
+		    	if(s.startsWith(TABLE_TYPE)) {
 		    		sb.append(s);
 		    	}
 		    }
@@ -105,7 +106,9 @@ public class Utility {
 	public static void deleteXmlFiles(List<String> codes) {
 		for(String code : codes) {
 			File xmlFile = new File(code);
-			xmlFile.delete();
+			boolean success = xmlFile.delete();
+			if (!success)
+			     throw new IllegalArgumentException("Delete: deletion failed");
 		}
 		
 	}
