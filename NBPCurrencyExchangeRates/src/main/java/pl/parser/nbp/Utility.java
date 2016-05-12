@@ -22,6 +22,7 @@ public class Utility {
 	final static String TABLE_TYPE = "c";
 	final static int FOLLOWING_DAYS = 1;
 	final static int PREVIOUS_DAYS = -1;
+	final static int RANGE_DAYS = 5;
 	
 	private Utility() {
     }
@@ -37,8 +38,8 @@ public class Utility {
 		int startYear = getYear(startDate);
 		String dirsContent = getNbpDirs(startYear, yearRange);
 		
-		String newFormatStartDateFollowingDays[] = getDaysInRange(startDate, 10, FOLLOWING_DAYS);
-		String newFormatStartDatePreviousDays[] = getDaysInRange(endDate, 10, PREVIOUS_DAYS);
+		String newFormatStartDateFollowingDays[] = getDaysInRange(startDate, RANGE_DAYS, FOLLOWING_DAYS);
+		String newFormatStartDatePreviousDays[] = getDaysInRange(endDate, RANGE_DAYS, PREVIOUS_DAYS);
 		
 		List<String> listWithCodes = new ArrayList<>();
 		
