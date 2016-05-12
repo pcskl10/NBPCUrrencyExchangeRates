@@ -20,8 +20,16 @@ import org.w3c.dom.Element;
 
 public class Parser {
 
+	private final static Parser instance = new Parser();
 	
-	public static String parseDate(String date) {
+	private Parser() {
+    }
+	
+	public static Parser getInstance() {
+        return instance;
+    }
+	
+	public String parseDate(String date) {
 		
 		SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat nbpFormat = new SimpleDateFormat("yyMMdd");
@@ -36,9 +44,10 @@ public class Parser {
 		return reformattedStr;
 	} 
 	
-	public static List<Currency> parseDataFromXmlFiles(List<String> codes, String currencySymbol) throws ParserConfigurationException, SAXException, IOException {
+	public List<Currency> parseDataFromXmlFiles(List<String> codes, String currencySymbol) throws ParserConfigurationException, SAXException, IOException {
 		
 		List<Currency> currencyRates = new ArrayList<>();
+		boolean foundCurrencySymbol = false;
 		for(String code : codes) { 
 			File inputFile = new File(code);
 	         DocumentBuilderFactory dbFactory 
@@ -50,20 +59,23 @@ public class Parser {
 	         for(int i = 0; i < pozycja.getLength(); i++) {
 	            Element eElementCurrency = getElement(doc, "pozycja", i);
 	            Element eElementPublishDate = getElement(doc, "tabela_kursow", 0);
-                if(getValueFromAttribute(eElementCurrency, "kod_waluty").equals(currencySymbol)) {
+                if(getValueFromAttribute(eElementCurrency, "kod_waluty").equals(currencySymbol.toUpperCase())) {
                 	currencyRates.add(getCurrencyInfo(eElementPublishDate, eElementCurrency));
+                	foundCurrencySymbol = true;
                 }
-	         }
+	         }	 
 		}
+		if(!foundCurrencySymbol)
+			throw new ParserConfigurationException("Error: not found currency symbol");
 		return currencyRates;
 	}
 	
-	private static String getValueFromAttribute(Element eElement, String attribute) {
+	private String getValueFromAttribute(Element eElement, String attribute) {
 		
 		return eElement.getElementsByTagName(attribute).item(0).getTextContent();
 	}
 	
-	private static Element getElement(Document xmlFile, String attributeName, int position) {
+	private Element getElement(Document xmlFile, String attributeName, int position) {
 		
 		NodeList nodeList = xmlFile.getElementsByTagName(attributeName);
 		Node node = nodeList.item(position);
@@ -72,14 +84,14 @@ public class Parser {
 		return element;
 	}
 	
-	public static Currency getCurrencyInfo(Element eElementPublishDate, Element eElementCurrency) {
+	public Currency getCurrencyInfo(Element eElementPublishDate, Element eElementCurrency) {
 		
-		Currency currency = new Currency();
-		currency.setPublishDate(getValueFromAttribute(eElementPublishDate, "data_publikacji"));
-    	currency.setCurrencyName(getValueFromAttribute(eElementCurrency, "nazwa_waluty"));
-    	currency.setCurrencySymbol(getValueFromAttribute(eElementCurrency, "kod_waluty"));
-    	currency.setCurrencyBuyRate(Double.parseDouble(getValueFromAttribute(eElementCurrency, "kurs_kupna").replace(',', '.')));
-    	currency.setCurrencySellRate(Double.parseDouble(getValueFromAttribute(eElementCurrency, "kurs_sprzedazy").replace(',', '.')));
+		String publishDate = getValueFromAttribute(eElementPublishDate, "data_publikacji");
+    	String currencyName = getValueFromAttribute(eElementCurrency, "nazwa_waluty");
+    	String currencySymbol = getValueFromAttribute(eElementCurrency, "kod_waluty");
+    	double buyRate = Double.parseDouble(getValueFromAttribute(eElementCurrency, "kurs_kupna").replace(',', '.'));
+    	double sellRate = Double.parseDouble(getValueFromAttribute(eElementCurrency, "kurs_sprzedazy").replace(',', '.'));
+    	Currency currency = new Currency(currencyName, currencySymbol, sellRate, buyRate, publishDate);
     	
     	return currency;
 	}

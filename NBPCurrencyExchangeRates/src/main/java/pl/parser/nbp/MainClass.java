@@ -15,22 +15,26 @@ public class MainClass {
 		/*String currencySymbol = args[0];
 		String startDate = args[1];
 		String endDate = args[2];*/
-				
+		
+		Parser parser = Parser.getInstance();
+		Utility utility = Utility.getInstance();
+		Statistics statistics = Statistics.getInstance();
 		List<String> listWithAdresses = null;
 		List<Currency> currencies = null;
 		try {
-			listWithAdresses = Utility.getAdresses("2012-01-10", "2013-01-31");
-			Utility.downloadXmlFilesFromParticularDays(listWithAdresses);
-			currencies = Parser.parseDataFromXmlFiles(listWithAdresses, "EUR");
+			listWithAdresses = utility.getAdresses("2013-01-28", "2013-01-31");
+			utility.downloadXmlFilesFromParticularDays(listWithAdresses);
+			currencies = parser.parseDataFromXmlFiles(listWithAdresses, "eur");
+			System.out.println(statistics.averageBuyRate(currencies));
+			System.out.println(statistics.standardDeviationSellRate(currencies));
 		} 
 		catch (ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
-		} 
-		
-		System.out.println(Statistics.averageBuyRate(currencies));
-		System.out.println(Statistics.standardDeviationSellRate(currencies));
-
-		Utility.deleteXmlFiles(listWithAdresses);
+			//e.printStackTrace();
+		}
+		finally {
+			utility.deleteXmlFiles(listWithAdresses);
+		}
+	
 
 	}
 

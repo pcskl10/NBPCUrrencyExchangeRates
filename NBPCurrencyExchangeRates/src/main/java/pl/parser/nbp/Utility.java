@@ -16,11 +16,19 @@ import org.joda.time.DateTime;
 
 public class Utility {
 
+	private final static Utility instance = new Utility();
 	
 	final static int CODE_LENGTH = 11;
 	final static String TABLE_TYPE = "c";
 	
-	public static List<String> getAdresses(String startDate, String endDate) throws ParseException, IOException {
+	private Utility() {
+    }
+	
+	public static Utility getInstance() {
+        return instance;
+    }
+  
+	public List<String> getAdresses(String startDate, String endDate) throws ParseException, IOException {
 		
 		
 		int yearRange = getYearRange(startDate, endDate);
@@ -48,7 +56,7 @@ public class Utility {
 		return listWithCodes;
 	}
 	
-	public static String getNbpDirs(int year, int yearRange) throws IOException {
+	public String getNbpDirs(int year, int yearRange) throws IOException {
 		
 		URL url;
 		Scanner scanner = null;
@@ -78,7 +86,7 @@ public class Utility {
 	    return allDirs;
 	}
 	
-	public static void downloadXmlFilesFromParticularDays(List<String> codes) throws IOException {
+	public void downloadXmlFilesFromParticularDays(List<String> codes) throws IOException {
 		
 		URL url;
 		Scanner scanner = null;
@@ -103,17 +111,15 @@ public class Utility {
 		}
 	}
 	
-	public static void deleteXmlFiles(List<String> codes) {
+	public void deleteXmlFiles(List<String> codes) {
 		for(String code : codes) {
 			File xmlFile = new File(code);
-			boolean success = xmlFile.delete();
-			if (!success)
-			     throw new IllegalArgumentException("Delete: deletion failed");
+			xmlFile.delete();
 		}
 		
 	}
 	
-	public static String getPreviousOrFollowingDay(String strDate, int move) throws ParseException {
+	public String getPreviousOrFollowingDay(String strDate, int move) throws ParseException {
 		
 		DateTime currentDate = new DateTime(getYear(strDate),
 											getMonth(strDate),
@@ -136,35 +142,37 @@ public class Utility {
 		return oneDayBeforeAsString;
 	}
 	
-	private static String[] getFollowingDays(String date, int numberOfFollowingDays) throws ParseException {
+	private String[] getFollowingDays(String date, int numberOfFollowingDays) throws ParseException {
 		
+		Parser parser = Parser.getInstance();
 		String followingDays[] = new String[numberOfFollowingDays+1];
 		followingDays[0] = date;
 		for(int i = 1; i < numberOfFollowingDays+1; i++) {
 			date = followingDays[i-1];
-			followingDays[i-1] = Parser.parseDate(followingDays[i-1]);
+			followingDays[i-1] = parser.parseDate(followingDays[i-1]);
 			followingDays[i] = getPreviousOrFollowingDay(date, 1);
 		}
-		followingDays[numberOfFollowingDays] = Parser.parseDate(followingDays[numberOfFollowingDays]);
+		followingDays[numberOfFollowingDays] = parser.parseDate(followingDays[numberOfFollowingDays]);
 		
 		return followingDays;
 	}
 	
-	private static String[] getPreviousDays(String date, int numberOfPreviousDays) throws ParseException {
+	private String[] getPreviousDays(String date, int numberOfPreviousDays) throws ParseException {
 		
+		Parser parser = Parser.getInstance();
 		String prevoiusDays[] = new String[numberOfPreviousDays+1];
 		prevoiusDays[0] = date;
 		for(int i = 1; i < numberOfPreviousDays+1; i++) {
 			date = prevoiusDays[i-1];
-			prevoiusDays[i-1] = Parser.parseDate(prevoiusDays[i-1]);
+			prevoiusDays[i-1] = parser.parseDate(prevoiusDays[i-1]);
 			prevoiusDays[i] = getPreviousOrFollowingDay(date, -1);
 		}
-		prevoiusDays[numberOfPreviousDays] = Parser.parseDate(prevoiusDays[numberOfPreviousDays]);
+		prevoiusDays[numberOfPreviousDays] = parser.parseDate(prevoiusDays[numberOfPreviousDays]);
 		
 		return prevoiusDays;
 	}
 	
-	private static String generateRegex(String[] followingDays, String[] previousDays) {
+	private String generateRegex(String[] followingDays, String[] previousDays) {
 		
 		String next = "(";
 		String previous = "(";
@@ -181,23 +189,23 @@ public class Utility {
 		return regex;
 	}
 	
-	private static int getYearRange(String startDate, String endDate) { 
+	private int getYearRange(String startDate, String endDate) { 
 		int dateFromYear = getYear(startDate);
 		int dateToYear = getYear(endDate);
 		return dateToYear-dateFromYear;
 	}
 	
-	private static int getYear(String date) {
+	private int getYear(String date) {
 		
 		return Integer.parseInt(date.substring(0, 4));
 	}
 	
-	private static int getMonth(String date) {
+	private int getMonth(String date) {
 		
 		return Integer.parseInt(date.substring(5, 7));
 	}
 	
-	private static int getDay(String date) {
+	private int getDay(String date) {
 		
 		return Integer.parseInt(date.substring(8, 10));
 	}
